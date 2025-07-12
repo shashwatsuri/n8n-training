@@ -1,0 +1,402 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e1f6f464-5ff8-4e72-86e9-6a8cb8d57d10",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/responses",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "o4-mini"
+            },
+            {
+              "name": "input",
+              "value": "tell me a short story about a unicorn"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        0
+      ],
+      "id": "8e6c5a75-40f7-4546-815c-c557dc653d58",
+      "name": "HTTP Request",
+      "credentials": {
+        "openAiApi": {
+          "id": "ZZdwtZ25MK3sDjkL",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "o4-mini",
+          "mode": "list",
+          "cachedResultName": "O4-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "How are you doing"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        280,
+        200
+      ],
+      "id": "16f88ea2-589c-4fda-af46-6b58b0c39d34",
+      "name": "Test Unicorn Story",
+      "credentials": {
+        "openAiApi": {
+          "id": "ZZdwtZ25MK3sDjkL",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/responses",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"model\":\"o4-mini\",\n  \"input\":\"create a step-by-step plan to send an email in Gmail, seperate them by '\\n\\n' characters \"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        280,
+        440
+      ],
+      "id": "6a30b184-e572-4c35-819f-cdc838492142",
+      "name": "HTTP Request1",
+      "credentials": {
+        "openAiApi": {
+          "id": "ZZdwtZ25MK3sDjkL",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "python",
+        "pythonCode": "# Add a new field called 'myNewField' to the JSON of the item\ntemp = _input.item.json.output[1].content[0].text\nsteps = temp.split(\"\\n\\n\")[:]\n#_input.item.json.steps = steps\nreturn {\"steps\":steps}\n\n#_input.item.json.steps = steps\n#print(steps)\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        440
+      ],
+      "id": "4b78ee74-daab-4ff5-b082-174ddfbfcf3b",
+      "name": "Steps to Aray"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "steps",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        700,
+        440
+      ],
+      "id": "ce641fc7-2e88-4c81-9dee-9035f96f91d4",
+      "name": "Split Out",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1300,
+        440
+      ],
+      "id": "6753294b-cad5-4e9a-8814-dcf25e4c030c",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        2000,
+        640
+      ],
+      "id": "625ae4ac-a9f0-4604-904f-f043726ba0be"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "o4-mini",
+          "mode": "list",
+          "cachedResultName": "O4-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Describe the step in more detail : {{ $json.steps }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1540,
+        540
+      ],
+      "id": "94a0a3dd-0084-4b36-86a8-6f5ab2a6d218",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ZZdwtZ25MK3sDjkL",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        900,
+        440
+      ],
+      "id": "fc5281cb-7ba6-4f84-9ed8-aaf986a816e6",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c69ad871-2ae8-42cc-96bf-c9291248c58a",
+              "name": "message.content",
+              "value": "={{ $json.message.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1820,
+        580
+      ],
+      "id": "be2248bb-3aa5-470d-9d63-816fe61e84be",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {
+    "No Operation, do nothing": [
+      {
+        "json": {
+          "steps": "Step 1: Open your web browser and navigate to https://mail.google.com  "
+        }
+      },
+      {
+        "json": {
+          "steps": "Step 2: Sign in to your Google account using your email address and password  "
+        }
+      },
+      {
+        "json": {
+          "steps": "Step 3: Click the “Compose” button (usually a plus-shaped icon or labeled “Compose”) in the top-left corner  "
+        }
+      },
+      {
+        "json": {
+          "steps": "Step 4: In the “To” field, enter the recipient’s email address  "
+        }
+      },
+      {
+        "json": {
+          "steps": "Step 5: (Optional) Click “CC” or “BCC” to add carbon-copy or blind-copy recipients  "
+        }
+      },
+      {
+        "json": {
+          "steps": "Step 6: In the “Subject” field, type a brief summary of your email’s topic  "
+        }
+      },
+      {
+        "json": {
+          "steps": "Step 7: Click into the main body area and type your message  "
+        }
+      },
+      {
+        "json": {
+          "steps": "Step 8: (Optional) Click the paperclip icon to attach files, then select files from your computer  "
+        }
+      },
+      {
+        "json": {
+          "steps": "Step 9: Review your email for accuracy, clarity, and any attachments  "
+        }
+      },
+      {
+        "json": {
+          "steps": "Step 10: Click the blue “Send” button at the bottom of the compose window to send your email"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Steps to Aray",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Steps to Aray": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Operation, do nothing": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1471d55d-b505-4a57-ae61-1a4f2f096722",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4cac9ed8b4929e854e0a2747575f6b8914f10c15a6cc0c3cebae2ec12d4c38e1"
+  },
+  "id": "lph80K8nzgbecNjM",
+  "tags": []
+}

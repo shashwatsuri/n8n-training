@@ -3,6 +3,7 @@
 *.env-n8n
 *.env-pg-langfuse
 *.env-pg-n8n
+*.env
 
 # MacOS
 .DS_Store
@@ -10,3 +11,7 @@
 # Data volumes
 .n8n
 .cache
+n8n-data
+
+# node modules
+*/node_modules
